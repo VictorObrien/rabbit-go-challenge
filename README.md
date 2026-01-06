@@ -60,8 +60,8 @@ docker-compose up --build
 ## Status do Projeto
 
 - [x] Etapa 1: Setup inicial
-- [ ] Etapa 2: Estruturas de dados
-- [ ] Etapa 3: Topologia RabbitMQ
+- [x] Etapa 2: Estruturas de dados
+- [x] Etapa 3: Topologia RabbitMQ
 - [ ] Etapa 4: Publisher API
 - [ ] Etapa 5: Consumer básico
 - [ ] Etapa 6: Sistema de retries
