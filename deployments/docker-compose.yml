@@ -1,0 +1,63 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - rabbit-net
+
+  publisher:
+    build: 
+      context: ..
+      dockerfile: services/publisher/Dockerfile
+    container_name: publisher
+    environment:
+      AMQP_URL: amqp://rabbit:rabbit@rabbitmq:5672/
+      HTTP_ADDR: :8080
+      DLQ_INSPECT_LIMIT: "50"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - rabbit-net
+
+  consumer:
+    build: 
+      context: ..
+      dockerfile: services/consumer/Dockerfile
+    container_name: consumer
+    environment:
+      AMQP_URL: amqp://rabbit:rabbit@rabbitmq:5672/
+      WORKERS: "10"
+      METRICS_ADDR: :9090
+      DB_PATH: /data/state.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - consumer-data:/data
+    ports:
+      - "9090:9090"
+    networks:
+      - rabbit-net
+
+volumes:
+  consumer-data: {}
+
+networks:
+  rabbit-net:
+    driver: bridge
+
